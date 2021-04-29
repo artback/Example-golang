@@ -1,0 +1,10 @@
+host: ":9090"
+service:
+  host: "http://onlineservice:9010/objects"
+database:
+  dbname: "bitburst"
+  driver: "postgres"
+  host: "db"
+  password: "password"
+  port: 5432
+  user: "user"
