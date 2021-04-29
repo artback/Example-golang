@@ -125,6 +125,7 @@ func Test_postgresRepository_Delete(t *testing.T) {
 				repo.UpsertAll(
 					context.Background(),
 					[]online.Status{*online.NewStatus(1, true), *online.NewStatus(5, true)},
+					time.Now(),
 				)
 			},
 			want: 0,
@@ -205,7 +206,7 @@ func Test_postgresRepository_UpsertAll(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.repository.UpsertAll(context.Background(), tt.status)
+			err := tt.repository.UpsertAll(context.Background(), tt.status, time.Now())
 			repository := tt.repository.(*postgresRepository)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpsertAll() error = %v, wantErr %v", err, tt.wantErr)

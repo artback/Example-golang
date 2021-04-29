@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 )
 
 type callbackHandler struct {
@@ -36,7 +37,7 @@ func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Println(err)
 			}
-			err = c.UpsertAll(c.context, status)
+			err = c.UpsertAll(c.context, status, time.Now())
 			if err != nil {
 				log.Println(err)
 			}
@@ -48,7 +49,7 @@ func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusMethodNotAllowed)
 	return
 }
-func readStatus(result  chan result) ([]online.Status, error) {
+func readStatus(result chan result) ([]online.Status, error) {
 	var status []online.Status
 	var err error
 	for r := range result {

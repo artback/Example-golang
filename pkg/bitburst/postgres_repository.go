@@ -36,7 +36,7 @@ func NewPostgresRepository(url *url.URL) (online.Repository, error) {
 
 // UpsertAll runs a transaction which updates each entry by first deleting and then inserting again
 // Uses application time instead of database time for compatibility and testability with DeleteOlder function
-func (p postgresRepository) UpsertAll(ctx context.Context, status []online.Status) error {
+func (p postgresRepository) UpsertAll(ctx context.Context, status []online.Status, t time.Time) error {
 	if len(status) == 0 {
 		return fmt.Errorf("status is empty")
 	}
@@ -69,7 +69,7 @@ func (p postgresRepository) UpsertAll(ctx context.Context, status []online.Statu
 			if err != nil {
 				return err
 			}
-			_, err = iStmt.ExecContext(ctx, s.Id, time.Now().Format(time.RFC3339))
+			_, err = iStmt.ExecContext(ctx, s.Id, t.Format(time.RFC3339))
 			if err != nil {
 				return err
 			}

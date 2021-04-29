@@ -25,7 +25,7 @@ type testRepository struct {
 	err error
 }
 
-func (t testRepository) UpsertAll(_ context.Context, _ []online.Status) error {
+func (t testRepository) UpsertAll(_ context.Context, _ []online.Status, _ time.Time) error {
 	return t.err
 }
 func (t testRepository) DeleteOlder(_ context.Context, _ time.Time) error {
@@ -63,8 +63,7 @@ func Test_callbackHandler_ServeHTTP(t *testing.T) {
 			want:       http.StatusOK,
 		},
 		{
-			name:
-			"error request",
+			name: "error request",
 			client: client{
 				error:  errors.New("something"),
 				status: *online.NewStatus(1, true),
@@ -75,15 +74,13 @@ func Test_callbackHandler_ServeHTTP(t *testing.T) {
 			want:       http.StatusBadRequest,
 		},
 		{
-			name:
-			"wrong method",
+			name:   "wrong method",
 			body:   []byte(`{"object_ids":[1,2]}`),
 			method: http.MethodPatch,
 			want:   http.StatusMethodNotAllowed,
 		},
 		{
-			name:
-			"errors repository",
+			name: "errors repository",
 			client: client{
 				status: *online.NewStatus(1, true),
 			},
