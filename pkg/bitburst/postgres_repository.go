@@ -31,6 +31,10 @@ func NewPostgresRepository(url *url.URL) (online.Repository, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
 	return &postgresRepository{db}, err
 }
 
