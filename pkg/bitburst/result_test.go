@@ -56,3 +56,51 @@ func Test_getResult(t *testing.T) {
 		})
 	}
 }
+
+func Test_readStatus(t *testing.T) {
+	type args struct {
+		input []result
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []online.Status
+		wantErr bool
+	}{
+		{
+			name: "all succeed",
+			args: args{
+				input: []result{
+					{status: online.NewStatus(1, true)},
+					{status: online.NewStatus(2, true)},
+				},
+			},
+			want: []online.Status{*online.NewStatus(1, true), *online.NewStatus(2, true)},
+		},
+		{
+			name: "return error",
+			args: args{
+				input: []result{},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := make(chan result)
+			go func() {
+				for _, input := range tt.args.input {
+					r <- input
+				}
+				close(r)
+			}()
+			got, err := readStatus(r)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getStatus() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getStatus() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

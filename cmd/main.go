@@ -6,6 +6,8 @@ import (
 	"bitburst/pkg/bitburst"
 	"bitburst/pkg/online"
 	"context"
+	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"time"
@@ -23,23 +25,25 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	handler := bitburst.NewCallBackHandler(context.Background(), online.NewClient(client, conf.Service.Host), repo)
+	handler := bitburst.NewCallBackHandler(online.NewClient(client, conf.Service.Host), repo)
 
 	go func() {
 		for {
-			repo.DeleteOlder(context.Background(), time.Now().Add(-30*time.Second))
+			err := repo.DeleteOlder(context.Background(), time.Now().Add(-30*time.Second))
+			if err != nil {
+				log.Println(fmt.Errorf("DeleteOlder %e", err))
+			}
 			time.Sleep(30 * time.Second)
 		}
 	}()
-
-	mux := http.NewServeMux()
-	mux.Handle("/callback", logging.Handler(handler))
+	router := mux.NewRouter()
+	router.Handle("/callback", logging.Handler(handler)).Methods(http.MethodPost)
 	srv := http.Server{
 		Addr:         conf.Host,
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 		IdleTimeout:  5 * time.Second,
-		Handler:      mux,
+		Handler:      router,
 	}
 	log.Println("Start server", conf.Host)
 	log.Fatal(srv.ListenAndServe())

@@ -27,3 +27,20 @@ func getResult(ids []int, client online.Client) chan result {
 	}()
 	return rChan
 }
+
+func readStatus(result chan result) ([]online.Status, error) {
+	var status []online.Status
+	var err error
+	for r := range result {
+		if r.err != nil {
+			err = r.err
+		}
+		if r.status != nil {
+			status = append(status, *r.status)
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	return status, nil
+}
