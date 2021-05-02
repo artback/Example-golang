@@ -25,6 +25,7 @@ type response struct {
 func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var resp response
 	err := json.NewDecoder(r.Body).Decode(&resp)
+	w.Header().Set("Connection", "close")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
