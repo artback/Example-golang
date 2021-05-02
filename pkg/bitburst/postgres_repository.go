@@ -4,7 +4,6 @@ import (
 	"bitburst/pkg/online"
 	"context"
 	"database/sql"
-	"fmt"
 	_ "github.com/lib/pq"
 	"net/url"
 	"time"
@@ -42,7 +41,8 @@ func NewPostgresRepository(url *url.URL) (online.Repository, error) {
 // Uses application time instead of database time for compatibility and testability with DeleteOlder function
 func (p postgresRepository) UpsertAll(ctx context.Context, status []online.Status, t time.Time) error {
 	if len(status) == 0 {
-		return fmt.Errorf("status is empty")
+		// Empty input isn't an error but it is unnecessary to continue function
+		return nil
 	}
 	tx, err := p.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {

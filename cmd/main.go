@@ -29,12 +29,15 @@ func main() {
 
 	go func() {
 		for {
-			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-			err := repo.DeleteOlder(ctx, time.Now().Add(-30*time.Second))
-			cancel()
-			if err != nil {
-				log.Println(fmt.Errorf("DeleteOlder %e", err))
-			}
+			func() {
+				defer logging.Elapsed("PostgresRepository.DeleteOlder")()
+				ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+				defer cancel()
+				err := repo.DeleteOlder(ctx, time.Now().Add(-30*time.Second))
+				if err != nil {
+					log.Println(fmt.Errorf("DeleteOlder %e", err))
+				}
+			}()
 			time.Sleep(30 * time.Second)
 		}
 	}()

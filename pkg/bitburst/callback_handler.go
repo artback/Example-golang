@@ -1,9 +1,11 @@
 package bitburst
 
 import (
+	"bitburst/internal/logging"
 	"bitburst/pkg/online"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -36,12 +38,15 @@ func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println(err)
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		err = c.UpsertAll(ctx, status, time.Now())
-		if err != nil {
-			log.Println(err)
-		}
+		func() {
+			defer logging.Elapsed(fmt.Sprintf("postgresRepository.UpsertAll %d elements", len(status)))()
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			err := c.UpsertAll(ctx, status, time.Now())
+			if err != nil {
+				log.Println(err)
+			}
+		}()
 	}()
 	w.WriteHeader(http.StatusOK)
 	return
