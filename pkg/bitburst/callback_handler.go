@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 )
@@ -36,7 +35,7 @@ func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		result := getResult(resp.ObjectIds, c.Client)
 		status, err := readStatus(result)
 		if err != nil {
-			log.Println(err)
+			logging.Info.Println(err)
 		}
 		func() {
 			defer logging.Elapsed(fmt.Sprintf("postgresRepository.UpsertAll %d elements", len(status)))()
@@ -44,7 +43,7 @@ func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			defer cancel()
 			err := c.UpsertAll(ctx, status, time.Now())
 			if err != nil {
-				log.Println(err)
+				logging.Info.Println(err)
 			}
 		}()
 	}()

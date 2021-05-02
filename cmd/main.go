@@ -23,7 +23,7 @@ func main() {
 	}
 	repo, err := bitburst.NewPostgresRepository(conf.GetdbUrl())
 	if err != nil {
-		log.Fatal(err)
+		logging.Error.Fatal(err)
 	}
 	handler := bitburst.NewCallBackHandler(online.NewClient(client, conf.Service.Host), repo)
 
@@ -35,7 +35,7 @@ func main() {
 				defer cancel()
 				err := repo.DeleteOlder(ctx, time.Now().Add(-30*time.Second))
 				if err != nil {
-					log.Println(fmt.Errorf("DeleteOlder %e", err))
+					logging.Error.Println(fmt.Errorf("DeleteOlder %e", err))
 				}
 			}()
 			time.Sleep(30 * time.Second)
@@ -50,6 +50,6 @@ func main() {
 		IdleTimeout:  5 * time.Second,
 		Handler:      router,
 	}
-	log.Println("Start server", conf.Host)
-	log.Fatal(srv.ListenAndServe())
+	logging.Info.Println("Start server", conf.Host)
+	logging.Error.Fatal(srv.ListenAndServe())
 }
