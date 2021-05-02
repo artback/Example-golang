@@ -35,7 +35,8 @@ func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println(err)
 		}
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 		err = c.UpsertAll(ctx, status, time.Now())
 		if err != nil {
 			log.Println(err)

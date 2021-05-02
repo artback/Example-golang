@@ -10,8 +10,8 @@ type result struct {
 	err    error
 }
 
-func getResult(ids []int, client online.Client) chan result {
-	rChan := make(chan result)
+func getResult(ids []int, client online.Client) <-chan result {
+	rChan := make(chan result, len(ids))
 	var wg sync.WaitGroup
 	for _, id := range ids {
 		wg.Add(1)
@@ -28,7 +28,7 @@ func getResult(ids []int, client online.Client) chan result {
 	return rChan
 }
 
-func readStatus(result chan result) ([]online.Status, error) {
+func readStatus(result <-chan result) ([]online.Status, error) {
 	var status []online.Status
 	var err error
 	for r := range result {

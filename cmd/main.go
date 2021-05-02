@@ -29,8 +29,9 @@ func main() {
 
 	go func() {
 		for {
-			ctx, _ := context.WithTimeout(context.Background(), 20*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 			err := repo.DeleteOlder(ctx, time.Now().Add(-30*time.Second))
+			cancel()
 			if err != nil {
 				log.Println(fmt.Errorf("DeleteOlder %e", err))
 			}
