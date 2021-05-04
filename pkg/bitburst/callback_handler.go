@@ -32,10 +32,11 @@ func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	go func() {
-		result := getResult(resp.ObjectIds, c.Client)
-		status, err := readStatus(result)
-		if err != nil {
-			logging.Info.Println(err)
+		status, err := readStatus(getResult(resp.ObjectIds, c.Client))
+		if len(err) > 0 {
+			for _, e := range err {
+				logging.Error.Println(e)
+			}
 		}
 		func() {
 			defer logging.Elapsed(fmt.Sprintf("postgresRepository.UpsertAll %d elements", len(status)))()
@@ -43,7 +44,7 @@ func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			defer cancel()
 			err := c.UpsertAll(ctx, status, time.Now())
 			if err != nil {
-				logging.Info.Println(err)
+				logging.Error.Println(err)
 			}
 		}()
 	}()

@@ -189,7 +189,6 @@ func Test_postgresRepository_UpsertAll(t *testing.T) {
 				}
 				return s
 			}(),
-			wantErr: true,
 		},
 		{
 			name:   "insert no table",

@@ -21,14 +21,14 @@ func (c client) GetStatus(id int) (*Status, error) {
 	url := c.baseURL + "/" + fmt.Sprint(id)
 	resp, err := c.Client.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("client: %x", err)
+		return nil, fmt.Errorf("status %d Get %e", id, err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("client: status code not OK")
+		return nil, fmt.Errorf("status %d: status code not OK", id)
 	}
 	status, err := DecodeStatus(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("client: %x", err)
+		return nil, fmt.Errorf("status %d decode err: %e", id, err)
 	}
 	return status, nil
 }
