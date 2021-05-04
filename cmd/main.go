@@ -35,7 +35,7 @@ func main() {
 				defer cancel()
 				err := repo.DeleteOlder(ctx, time.Now().Add(-30*time.Second))
 				if err != nil {
-					logging.Error.Println(fmt.Errorf("DeleteOlder %e", err))
+					logging.Error.Println(fmt.Errorf("DeleteOlder %v", err))
 				}
 			}()
 			time.Sleep(30 * time.Second)

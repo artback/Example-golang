@@ -81,7 +81,6 @@ func Test_readStatus(t *testing.T) {
 			name: "return error",
 			args: args{
 				input: []result{
-
 					{status: nil, err: errors.New("something happened")},
 				},
 			},

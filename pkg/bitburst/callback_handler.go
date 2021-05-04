@@ -28,6 +28,7 @@ func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&resp)
 	w.Header().Set("Connection", "close")
 	if err != nil {
+		logging.Error.Println(fmt.Errorf("decode body %e", err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

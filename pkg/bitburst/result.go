@@ -27,7 +27,6 @@ func getResult(ids []int, client online.Client) <-chan result {
 	}()
 	return rChan
 }
-
 func readStatus(result <-chan result) ([]online.Status, []error) {
 	var status []online.Status
 	var err []error
@@ -39,5 +38,7 @@ func readStatus(result <-chan result) ([]online.Status, []error) {
 			status = append(status, *r.status)
 		}
 	}
+	// Technically returning an slice of errors is a bit unexpected in golang
+	// but when written to the logger it will have nicer output than combining them into one error.
 	return status, err
 }
