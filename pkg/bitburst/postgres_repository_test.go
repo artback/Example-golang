@@ -134,12 +134,12 @@ func Test_postgresRepository_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s, err := NewPostgresRepository(startDatabase(t))
-			repository := s.(*postgresRepository)
-			tt.setup(s)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteAll() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			repository := s.(*postgresRepository)
+			tt.setup(s)
 			err = s.DeleteOlder(context.Background(), tt.time)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteAll() error = %v, wantErr %v", err, tt.wantErr)
@@ -206,11 +206,11 @@ func Test_postgresRepository_UpsertAll(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.repository.UpsertAll(context.Background(), tt.status, time.Now())
-			repository := tt.repository.(*postgresRepository)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpsertAll() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			repository := tt.repository.(*postgresRepository)
 			if !tt.wantErr {
 				res, _ := repository.Exec("select * from status")
 				got, _ := res.RowsAffected()
