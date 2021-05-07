@@ -18,15 +18,15 @@ func Test_getResult(t *testing.T) {
 		{
 			name: "return 1 status",
 			client: client{
-				status: *online.NewStatus(1, true),
+				status: online.Status{1, true},
 			},
 			ids:  []int{1},
-			want: []online.Status{*online.NewStatus(1, true)},
+			want: []online.Status{{1, true}},
 		},
 		{
 			name: "return error",
 			client: client{
-				status: *online.NewStatus(1, true),
+				status: online.Status{1, true},
 				error:  errors.New("something"),
 			},
 			ids:     []int{1},
@@ -71,11 +71,11 @@ func Test_readStatus(t *testing.T) {
 			name: "all succeed",
 			args: args{
 				input: []result{
-					{status: online.NewStatus(1, true)},
-					{status: online.NewStatus(2, true)},
+					{status: &online.Status{1, true}},
+					{status: &online.Status{2, true}},
 				},
 			},
-			want: []online.Status{*online.NewStatus(1, true), *online.NewStatus(2, true)},
+			want: []online.Status{{1, true}, {2, true}},
 		},
 		{
 			name: "return error",

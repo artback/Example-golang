@@ -39,8 +39,8 @@ func NewPostgresRepository(url *url.URL) (online.Repository, error) {
 	return &postgresRepository{db}, err
 }
 
-func BuildValuesString(strFmt string, length int) string {
-	valueStrings := []string{}
+func buildValuesString(strFmt string, length int) string {
+	var valueStrings []string
 	for i := 1; i < length; i++ {
 		valueStrings = append(valueStrings, fmt.Sprintf("($%d,$%d)", i*2, i*2+1))
 		i++
@@ -59,11 +59,11 @@ func (p postgresRepository) UpsertAll(ctx context.Context, status []online.Statu
 	valueArgs := []interface{}{}
 	var i int
 	for _, s := range status {
-		valueArgs = append(valueArgs, *s.Id)
+		valueArgs = append(valueArgs, s.Id)
 		valueArgs = append(valueArgs, t.Format(time.RFC3339))
 		i++
 	}
-	valueString := BuildValuesString(insertStatus, len(status))
+	valueString := buildValuesString(insertStatus, len(status))
 	_, err := p.ExecContext(ctx, valueString, valueArgs...)
 	if err != nil {
 		return err

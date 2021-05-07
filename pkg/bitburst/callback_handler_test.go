@@ -25,10 +25,10 @@ type testRepository struct {
 	err error
 }
 
-func (t testRepository) UpsertAll(ctx context.Context, _ []online.Status, _ time.Time) error {
+func (t testRepository) UpsertAll(_ context.Context, _ []online.Status, _ time.Time) error {
 	return t.err
 }
-func (t testRepository) DeleteOlder(context context.Context, _ time.Time) error {
+func (t testRepository) DeleteOlder(_ context.Context, _ time.Time) error {
 	return t.err
 }
 
@@ -44,7 +44,7 @@ func Test_callbackHandler_ServeHTTP(t *testing.T) {
 		{
 			name: "ok request",
 			client: client{
-				status: *online.NewStatus(1, true),
+				status: online.Status{Id: 1, Online: true},
 			},
 			repository: testRepository{},
 			method:     http.MethodPost,
@@ -55,7 +55,7 @@ func Test_callbackHandler_ServeHTTP(t *testing.T) {
 			name: "error response",
 			client: client{
 				error:  errors.New("something"),
-				status: *online.NewStatus(1, true),
+				status: online.Status{Id: 1, Online: true},
 			},
 			repository: testRepository{},
 			body:       []byte(`{"object_ids":[1,2]}`),
@@ -66,7 +66,7 @@ func Test_callbackHandler_ServeHTTP(t *testing.T) {
 			name: "error request",
 			client: client{
 				error:  errors.New("something"),
-				status: *online.NewStatus(1, true),
+				status: online.Status{Id: 1, Online: true},
 			},
 			repository: testRepository{},
 			body:       []byte(`{"object_ids":["1","2"]}`),
@@ -76,7 +76,7 @@ func Test_callbackHandler_ServeHTTP(t *testing.T) {
 		{
 			name: "errors repository",
 			client: client{
-				status: *online.NewStatus(1, true),
+				status: online.Status{Id: 1, Online: true},
 			},
 			repository: testRepository{
 				err: errors.New("something"),

@@ -27,7 +27,7 @@ func TestClient_GetStatus(t *testing.T) {
 				rw.Write([]byte(`{ "online": true,"id": 1}`))
 			})),
 			args: args{id: 1},
-			want: online.NewStatus(1, true),
+			want: &online.Status{1, true},
 		},
 		{
 			name: "return empty",
@@ -58,7 +58,7 @@ func TestClient_GetStatus(t *testing.T) {
 		{
 			name: "fail get",
 			server: httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-					rw.WriteHeader(http.StatusInternalServerError)
+				rw.WriteHeader(http.StatusInternalServerError)
 				rw.Write([]byte(`{ "online": true,"id": 1}`))
 			})),
 			closeConn: true,

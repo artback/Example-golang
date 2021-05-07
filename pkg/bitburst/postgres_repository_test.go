@@ -124,7 +124,7 @@ func Test_postgresRepository_Delete(t *testing.T) {
 			setup: func(repo online.Repository) {
 				repo.UpsertAll(
 					context.Background(),
-					[]online.Status{*online.NewStatus(1, true), *online.NewStatus(5, true)},
+					[]online.Status{online.Status{1, true}, online.Status{5, true}},
 					time.Now(),
 				)
 			},
@@ -169,7 +169,7 @@ func Test_postgresRepository_UpsertAll(t *testing.T) {
 	}{
 		{
 			name:   "insert 2",
-			status: []online.Status{*online.NewStatus(1, true), *online.NewStatus(2, true)},
+			status: []online.Status{online.Status{1, true}, online.Status{2, true}},
 			repository: func() online.Repository {
 				s, err := NewPostgresRepository(startDatabase(t))
 				if err != nil {
@@ -192,7 +192,7 @@ func Test_postgresRepository_UpsertAll(t *testing.T) {
 		},
 		{
 			name:   "insert no table",
-			status: []online.Status{*online.NewStatus(1, true), *online.NewStatus(2, true)},
+			status: []online.Status{online.Status{1, true}, online.Status{2, true}},
 			repository: func() online.Repository {
 				db, err := sql.Open("postgres", startDatabase(t).String())
 				if err != nil {
