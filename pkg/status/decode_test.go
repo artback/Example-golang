@@ -1,7 +1,8 @@
-package online_test
+package status_test
 
 import (
 	"bitburst/pkg/online"
+	"bitburst/pkg/status"
 	"io"
 	"reflect"
 	"strings"
@@ -23,7 +24,7 @@ func TestDecodeStatus(t *testing.T) {
 			args: args{
 				r: strings.NewReader(`{ "online": true,"id": 1}`),
 			},
-			want: online.NewStatus(1, true),
+			want: &online.Status{1, true},
 		},
 		{
 			name: "decode nil",
@@ -42,7 +43,7 @@ func TestDecodeStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := online.DecodeStatus(tt.args.r)
+			got, err := status.Decode(tt.args.r)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DecodeStatus() error = %v, wantErr %v", err, tt.wantErr)
 				return

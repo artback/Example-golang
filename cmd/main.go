@@ -4,9 +4,8 @@ import (
 	"bitburst/internal/config"
 	"bitburst/internal/logging"
 	"bitburst/pkg/bitburst"
-	"bitburst/pkg/online"
+	"bitburst/pkg/status"
 	"context"
-	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -18,31 +17,31 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client := &http.Client{
-		Timeout: time.Second * 5,
-	}
 	repo, err := bitburst.NewPostgresRepository(conf.GetdbUrl())
+	go func() {
+		for {
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			err := repo.DeleteOlder(ctx, time.Now().Add(-30*time.Second))
+			cancel()
+			if err != nil {
+				logging.Error.Println(err)
+			}
+			time.Sleep(30 * time.Second)
+
+		}
+	}()
+
 	if err != nil {
 		logging.Error.Fatal(err)
 	}
-	handler := bitburst.NewCallBackHandler(online.NewClient(client, conf.Service.Host), repo)
-
-	go func() {
-		for {
-			func() {
-				defer logging.Elapsed("PostgresRepository.DeleteOlder")()
-				ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-				defer cancel()
-				err := repo.DeleteOlder(ctx, time.Now().Add(-30*time.Second))
-				if err != nil {
-					logging.Error.Println(fmt.Errorf("DeleteOlder %v", err))
-				}
-			}()
-			time.Sleep(30 * time.Second)
-		}
-	}()
+	s := bitburst.Service{
+		Client: status.NewClient(&http.Client{
+			Timeout: time.Second * 5,
+		}, conf.Service.Host),
+		Repository: repo,
+	}
 	router := mux.NewRouter()
-	router.Handle("/callback", logging.Handler(handler)).Methods(http.MethodPost)
+	router.Handle("/callback", logging.Handler(bitburst.NewCallBackHandler(s))).Methods(http.MethodPost)
 	srv := http.Server{
 		Addr:         conf.Host,
 		WriteTimeout: 5 * time.Second,

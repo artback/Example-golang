@@ -1,7 +1,7 @@
 package bitburst
 
 import (
-	"bitburst/pkg/online"
+	"bitburst/pkg/id"
 	"bytes"
 	"context"
 	"errors"
@@ -9,80 +9,56 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
-	"time"
 )
 
-type client struct {
-	status online.Status
-	error  error
-}
-
-func (c client) GetStatus(_ int) (*online.Status, error) {
-	return &c.status, c.error
-}
-
-type testRepository struct {
+type service struct {
 	err error
 }
 
-func (t testRepository) UpsertAll(_ context.Context, _ []online.Status, _ time.Time) error {
-	return t.err
+func (s service) Handle(_ context.Context, ids []int) error {
+	return s.err
 }
-func (t testRepository) DeleteOlder(_ context.Context, _ time.Time) error {
-	return t.err
-}
-
 func Test_callbackHandler_ServeHTTP(t *testing.T) {
 	tests := []struct {
-		name       string
-		client     online.Client
-		repository online.Repository
-		method     string
-		body       []byte
-		want       int
+		name    string
+		service id.Service
+		method  string
+		body    []byte
+		want    int
 	}{
 		{
 			name: "ok request",
-			client: client{
-				status: online.Status{Id: 1, Online: true},
+			service: service{
+				nil,
 			},
-			repository: testRepository{},
-			method:     http.MethodPost,
-			body:       []byte(`{"object_ids":[1,2]}`),
-			want:       http.StatusOK,
+			body: []byte(`{"object_ids":[1,2]}`),
+			want: http.StatusOK,
 		},
 		{
 			name: "error response",
-			client: client{
-				error:  errors.New("something"),
-				status: online.Status{Id: 1, Online: true},
+			service: service{
+				nil,
 			},
-			repository: testRepository{},
-			body:       []byte(`{"object_ids":[1,2]}`),
-			method:     http.MethodPost,
-			want:       http.StatusOK,
+			body:   []byte(`{"object_ids":[1,2]}`),
+			method: http.MethodPost,
+			want:   http.StatusOK,
 		},
 		{
 			name: "error request",
-			client: client{
-				error:  errors.New("something"),
-				status: online.Status{Id: 1, Online: true},
+			service: service{
+				nil,
 			},
-			repository: testRepository{},
-			body:       []byte(`{"object_ids":["1","2"]}`),
-			method:     http.MethodPost,
-			want:       http.StatusBadRequest,
+			body:   []byte(`{"object_ids":["1","2"]}`),
+			method: http.MethodPost,
+			want:   http.StatusBadRequest,
 		},
 		{
-			name: "errors repository",
-			client: client{
-				status: online.Status{Id: 1, Online: true},
+			name: "error service",
+			service: service{
+				errors.New("shit happens"),
 			},
-			repository: testRepository{
-				err: errors.New("something"),
-			},
-			method: http.MethodPost,
 			body:   []byte(`{"object_ids":[1,2]}`),
+			method: http.MethodPost,
 			want:   http.StatusOK,
 		},
 	}
@@ -90,7 +66,7 @@ func Test_callbackHandler_ServeHTTP(t *testing.T) {
 		req, _ := http.NewRequest(tt.method, "/", bytes.NewReader(tt.body))
 		t.Run(tt.name, func(t *testing.T) {
 			rec := httptest.NewRecorder()
-			c := NewCallBackHandler(tt.client, tt.repository)
+			c := NewCallBackHandler(tt.service)
 			c.ServeHTTP(rec, req)
 			if status := rec.Code; status != tt.want {
 				t.Errorf("handler returned wrong status code: got %v want %v",
@@ -102,21 +78,18 @@ func Test_callbackHandler_ServeHTTP(t *testing.T) {
 
 func TestNewCallBackHandler(t *testing.T) {
 	tests := []struct {
-		name string
-		online.Client
-		online.Repository
-		want http.Handler
+		name    string
+		service id.Service
+		want    http.Handler
 	}{
 		{
-			name:       "create callBackHandler",
-			Client:     online.NewClient(http.DefaultClient, "/"),
-			Repository: testRepository{},
-			want:       NewCallBackHandler(online.NewClient(http.DefaultClient, "/"), testRepository{}),
+			name: "create callBackHandler",
+			want: NewCallBackHandler(nil),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewCallBackHandler(tt.Client, tt.Repository); !reflect.DeepEqual(got, tt.want) {
+			if got := NewCallBackHandler(tt.service); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewCallBackHandler() = %v, want %v", got, tt.want)
 			}
 		})

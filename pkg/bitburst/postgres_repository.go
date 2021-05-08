@@ -1,13 +1,12 @@
 package bitburst
 
 import (
+	"bitburst/internal/db"
 	"bitburst/pkg/online"
 	"context"
 	"database/sql"
-	"fmt"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"net/url"
-	"strings"
 	"time"
 )
 
@@ -39,15 +38,6 @@ func NewPostgresRepository(url *url.URL) (online.Repository, error) {
 	return &postgresRepository{db}, err
 }
 
-func buildValuesString(strFmt string, length int) string {
-	var valueStrings []string
-	for i := 1; i < length; i++ {
-		valueStrings = append(valueStrings, fmt.Sprintf("($%d,$%d)", i*2, i*2+1))
-		i++
-	}
-	return fmt.Sprintf(strFmt, strings.Join(valueStrings, ","))
-}
-
 // UpsertAll runs a transaction which updates each entry by first deleting and then inserting again
 // Uses application time instead of database time for compatibility and testability with DeleteOlder function
 func (p postgresRepository) UpsertAll(ctx context.Context, status []online.Status, t time.Time) error {
@@ -55,20 +45,14 @@ func (p postgresRepository) UpsertAll(ctx context.Context, status []online.Statu
 		// Empty input isn't an error but it is unnecessary to continue function
 		return nil
 	}
-	status = online.GetUnique(status, true)
 	valueArgs := []interface{}{}
-	var i int
 	for _, s := range status {
 		valueArgs = append(valueArgs, s.Id)
 		valueArgs = append(valueArgs, t.Format(time.RFC3339))
-		i++
 	}
-	valueString := buildValuesString(insertStatus, len(status))
+	valueString := db.BuildValuesString(insertStatus, len(status))
 	_, err := p.ExecContext(ctx, valueString, valueArgs...)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // DeleteOlder deletes every status entry older or equal to t(time.time)

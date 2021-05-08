@@ -2,7 +2,7 @@ package bitburst
 
 import (
 	"bitburst/internal/logging"
-	"bitburst/pkg/online"
+	"bitburst/pkg/id"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,12 +11,11 @@ import (
 )
 
 type callbackHandler struct {
-	online.Client
-	online.Repository
+	id.Service
 }
 
-func NewCallBackHandler(client online.Client, repository online.Repository) http.Handler {
-	return callbackHandler{Client: client, Repository: repository}
+func NewCallBackHandler(service id.Service) http.Handler {
+	return callbackHandler{service}
 }
 
 type response struct {
@@ -25,30 +24,20 @@ type response struct {
 
 func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var resp response
-	err := json.NewDecoder(r.Body).Decode(&resp)
-	w.Header().Set("Connection", "close")
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
 		logging.Error.Println(fmt.Errorf("decode body %e", err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	go func() {
-		status, err := readStatus(getResult(resp.ObjectIds, c.Client))
-		if len(err) > 0 {
-			for _, e := range err {
-				logging.Error.Println(e)
-			}
+		defer cancel()
+		if err := c.Handle(ctx, resp.ObjectIds); err != nil {
+			logging.Error.Println(err)
 		}
-		func() {
-			defer logging.Elapsed(fmt.Sprintf("postgresRepository.UpsertAll %d elements", len(status)))()
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			err := c.UpsertAll(ctx, status, time.Now())
-			if err != nil {
-				logging.Error.Println(err)
-			}
-		}()
 	}()
+	w.Header().Set("Connection", "close")
 	w.WriteHeader(http.StatusOK)
 	return
 }
