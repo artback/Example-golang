@@ -1,11 +1,10 @@
 package bitburst
 
 import (
-	"bitburst/internal/logging"
+	"bitburst/internal/body"
 	"bitburst/pkg/id"
 	"context"
-	"encoding/json"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
@@ -24,20 +23,19 @@ type response struct {
 
 func (c callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var resp response
-	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
-		logging.Error.Println(fmt.Errorf("decode body %e", err))
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	status, err := body.DecodeJSONBody(r, &resp)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, err.Error(), status)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	go func() {
 		defer cancel()
 		if err := c.Handle(ctx, resp.ObjectIds); err != nil {
-			logging.Error.Println(err)
+			log.Error(err)
 		}
 	}()
 	w.Header().Set("Connection", "close")
-	w.WriteHeader(http.StatusOK)
 	return
 }

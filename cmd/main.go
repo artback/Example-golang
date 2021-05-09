@@ -7,7 +7,7 @@ import (
 	"bitburst/pkg/status"
 	"context"
 	"github.com/gorilla/mux"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
@@ -24,7 +24,7 @@ func main() {
 			err := repo.DeleteOlder(ctx, time.Now().Add(-30*time.Second))
 			cancel()
 			if err != nil {
-				logging.Error.Println(err)
+				log.Error(err)
 			}
 			time.Sleep(30 * time.Second)
 
@@ -32,7 +32,8 @@ func main() {
 	}()
 
 	if err != nil {
-		logging.Error.Fatal(err)
+		log.Error(err)
+		return
 	}
 	s := bitburst.Service{
 		Client: status.NewClient(&http.Client{
@@ -49,6 +50,6 @@ func main() {
 		IdleTimeout:  5 * time.Second,
 		Handler:      router,
 	}
-	logging.Info.Println("Start server", conf.Host)
-	logging.Error.Fatal(srv.ListenAndServe())
+	log.Info("Start server", conf.Host)
+	log.Error(srv.ListenAndServe())
 }
