@@ -47,8 +47,10 @@ func (p postgresRepository) UpsertAll(ctx context.Context, status []online.Statu
 	}
 	valueArgs := []interface{}{}
 	for _, s := range status {
-		valueArgs = append(valueArgs, s.Id)
-		valueArgs = append(valueArgs, t.Format(time.RFC3339))
+		if s.Online {
+			valueArgs = append(valueArgs, s.Id)
+			valueArgs = append(valueArgs, t.Format(time.RFC3339))
+		}
 	}
 	valueString := db.BuildValuesString(insertStatus, len(status))
 	_, err := p.ExecContext(ctx, valueString, valueArgs...)
