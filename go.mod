@@ -9,21 +9,22 @@ require (
 	github.com/containerd/continuity v0.1.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
+	github.com/gin-gonic/gin v1.7.1
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang/gddo v0.0.0-20210115222349-20d68f94ee1f
-	github.com/gorilla/mux v1.7.3
 	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/lib/pq v1.10.1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/opencontainers/runc v0.1.1 // indirect
 	github.com/ory/dockertest v3.3.5+incompatible
+	github.com/pkg/errors v0.9.1
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
 	golang.org/x/net v0.0.0-20210423184538-5f58ad60dda6 // indirect
 	golang.org/x/sys v0.0.0-20210426080607-c94f62235c83 // indirect
-	gopkg.in/yaml.v2 v2.2.4
+	gopkg.in/yaml.v2 v2.2.8
 	gotest.tools v2.2.0+incompatible // indirect
 )

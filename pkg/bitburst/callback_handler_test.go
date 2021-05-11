@@ -5,9 +5,9 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 )
 
@@ -31,8 +31,9 @@ func Test_callbackHandler_ServeHTTP(t *testing.T) {
 			service: service{
 				nil,
 			},
-			body: []byte(`{"object_ids":[1,2]}`),
-			want: http.StatusOK,
+			method: http.MethodPost,
+			body:   []byte(`{"object_ids":[1,2]}`),
+			want:   http.StatusOK,
 		},
 		{
 			name: "error response",
@@ -62,36 +63,30 @@ func Test_callbackHandler_ServeHTTP(t *testing.T) {
 			want:   http.StatusOK,
 		},
 	}
+
 	for _, tt := range tests {
-		req, _ := http.NewRequest(tt.method, "/", bytes.NewReader(tt.body))
 		t.Run(tt.name, func(t *testing.T) {
-			rec := httptest.NewRecorder()
-			c := NewCallBackHandler(tt.service)
-			c.ServeHTTP(rec, req)
-			if status := rec.Code; status != tt.want {
-				t.Errorf("handler returned wrong status code: got %v want %v",
-					status, tt.want)
-			}
+			g := gin.Default()
+			g.POST("/", CallBackHandler(tt.service))
+			req, _ := http.NewRequest(tt.method, "/", bytes.NewReader(tt.body))
+			testHTTPResponse(g, req, func(w *httptest.ResponseRecorder) {
+				if status := w.Code; status != tt.want {
+					t.Errorf("handler returned wrong status code: got %v want %v",
+						status, tt.want)
+				}
+			})
 		})
 	}
 }
 
-func TestNewCallBackHandler(t *testing.T) {
-	tests := []struct {
-		name    string
-		service id.Service
-		want    http.Handler
-	}{
-		{
-			name: "create callBackHandler",
-			want: NewCallBackHandler(nil),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewCallBackHandler(tt.service); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewCallBackHandler() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+// Helper function to process a request and test its response
+func testHTTPResponse(r *gin.Engine, req *http.Request, f func(w *httptest.ResponseRecorder)) {
+
+	// Create a response recorder
+	w := httptest.NewRecorder()
+
+	// Create the service and process the above request.
+	r.ServeHTTP(w, req)
+
+	f(w)
 }

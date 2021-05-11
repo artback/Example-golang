@@ -2,11 +2,9 @@ package main
 
 import (
 	"bitburst/internal/config"
-	"bitburst/internal/logging"
 	"bitburst/pkg/bitburst"
 	"bitburst/pkg/status"
 	"context"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
@@ -18,6 +16,11 @@ func main() {
 		log.Fatal(err)
 	}
 	repo, err := bitburst.NewPostgresRepository(conf.GetdbUrl())
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
 	go func() {
 		for {
 			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
@@ -31,25 +34,12 @@ func main() {
 		}
 	}()
 
-	if err != nil {
-		log.Error(err)
-		return
-	}
 	s := bitburst.Service{
 		Client: status.NewClient(&http.Client{
 			Timeout: time.Second * 5,
 		}, conf.Service.Host),
 		Repository: repo,
 	}
-	router := mux.NewRouter()
-	router.Handle("/callback", logging.Handler(bitburst.NewCallBackHandler(s))).Methods(http.MethodPost)
-	srv := http.Server{
-		Addr:         conf.Host,
-		WriteTimeout: 5 * time.Second,
-		ReadTimeout:  5 * time.Second,
-		IdleTimeout:  5 * time.Second,
-		Handler:      router,
-	}
 	log.Info("Start server", conf.Host)
-	log.Error(srv.ListenAndServe())
+	log.Error(bitburst.SetupRouter(s).Run(conf.Host))
 }
