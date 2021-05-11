@@ -10,7 +10,7 @@ import (
 
 type Service struct {
 	online.Client
-	online.Repository
+	Repository online.Upsert
 }
 
 func (s Service) Handle(ctx context.Context, ids []int) error {
@@ -23,7 +23,7 @@ func (s Service) Handle(ctx context.Context, ids []int) error {
 	}
 	err = func() error {
 		defer logging.Elapsed(fmt.Sprintf("Repository.UpsertAll %d elements", len(status)))()
-		err := s.UpsertAll(ctx, status, time.Now())
+		err := s.Repository.UpsertAll(ctx, status, time.Now())
 		return err
 	}()
 	return err

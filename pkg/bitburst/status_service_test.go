@@ -24,14 +24,11 @@ type testRepository struct {
 func (t testRepository) UpsertAll(_ context.Context, _ []online.Status, _ time.Time) error {
 	return t.err
 }
-func (t testRepository) DeleteOlder(_ context.Context, _ time.Time) error {
-	return t.err
-}
 
 func TestService_Handle(t *testing.T) {
 	type fields struct {
 		Client     online.Client
-		Repository online.Repository
+		Repository online.Upsert
 	}
 	type args struct {
 		ctx context.Context
@@ -73,8 +70,8 @@ func TestService_Handle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := Service{
-				Client:     tt.fields.Client,
-				Repository: tt.fields.Repository,
+				tt.fields.Client,
+				tt.fields.Repository,
 			}
 			if err := s.Handle(tt.args.ctx, tt.args.ids); (err != nil) != tt.wantErr {
 				t.Errorf("Handle() error = %v, wantErr %v", err, tt.wantErr)

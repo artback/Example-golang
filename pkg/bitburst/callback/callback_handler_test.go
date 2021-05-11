@@ -1,4 +1,4 @@
-package bitburst
+package callback
 
 import (
 	"bitburst/pkg/id"

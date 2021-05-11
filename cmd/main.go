@@ -3,7 +3,8 @@ package main
 import (
 	"bitburst/internal/config"
 	"bitburst/pkg/bitburst"
-	"bitburst/pkg/status"
+	"bitburst/pkg/bitburst/callback"
+	status2 "bitburst/pkg/bitburst/status"
 	"context"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -30,16 +31,15 @@ func main() {
 				log.Error(err)
 			}
 			time.Sleep(30 * time.Second)
-
 		}
 	}()
 
 	s := bitburst.Service{
-		Client: status.NewClient(&http.Client{
+		Client: status2.NewClient(&http.Client{
 			Timeout: time.Second * 5,
 		}, conf.Service.Host),
 		Repository: repo,
 	}
 	log.Info("Start server", conf.Host)
-	log.Error(bitburst.SetupRouter(s).Run(conf.Host))
+	log.Error(callback.SetupRouter(s).Run(conf.Host))
 }

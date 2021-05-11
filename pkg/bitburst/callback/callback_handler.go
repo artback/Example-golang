@@ -1,4 +1,4 @@
-package bitburst
+package callback
 
 import (
 	"bitburst/pkg/id"
@@ -12,7 +12,12 @@ type response struct {
 	ObjectIds []int `json:"object_ids"`
 }
 
-func CallBackHandler(service id.Service) gin.HandlerFunc {
+func SetupRouter(s id.Service) *gin.Engine {
+	e := gin.New()
+	e.POST("/callback", Handler(s))
+	return e
+}
+func Handler(service id.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var resp response
 		err := c.ShouldBindJSON(&resp)
