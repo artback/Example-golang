@@ -18,8 +18,11 @@ CREATE TABLE IF NOT EXISTS status(
 const insertStatus = "INSERT INTO status (id,last_seen) VALUES %s ON CONFLICT(id) DO UPDATE SET last_seen = excluded.last_seen"
 const deleteLastSeen = `DELETE FROM status WHERE last_seen <= $1`
 
+type sqlContext interface {
+	ExecContext(ctx context.Context, valueString string, args ...interface{}) (sql.Result, error)
+}
 type postgresRepository struct {
-	*sql.DB
+	db sqlContext
 }
 
 func NewPostgresRepository(url *url.URL) (online.Repository, error) {
@@ -53,12 +56,12 @@ func (p postgresRepository) UpsertAll(ctx context.Context, status []online.Statu
 		}
 	}
 	valueString := db.BuildValuesString(insertStatus, len(status))
-	_, err := p.ExecContext(ctx, valueString, valueArgs...)
+	_, err := p.db.ExecContext(ctx, valueString, valueArgs...)
 	return err
 }
 
 // DeleteOlder deletes every status entry older or equal to t(time.time)
 func (p postgresRepository) DeleteOlder(ctx context.Context, t time.Time) error {
-	_, err := p.ExecContext(ctx, deleteLastSeen, t.Format(time.RFC3339))
+	_, err := p.db.ExecContext(ctx, deleteLastSeen, t.Format(time.RFC3339))
 	return err
 }

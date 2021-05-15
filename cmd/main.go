@@ -4,7 +4,7 @@ import (
 	"bitburst/internal/config"
 	"bitburst/pkg/bitburst"
 	"bitburst/pkg/bitburst/callback"
-	status2 "bitburst/pkg/bitburst/status"
+	"bitburst/pkg/bitburst/status"
 	"context"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -35,7 +35,7 @@ func main() {
 	}()
 
 	s := bitburst.Service{
-		Client: status2.NewClient(&http.Client{
+		Client: status.NewClient(&http.Client{
 			Timeout: time.Second * 5,
 		}, conf.Service.Host),
 		Repository: repo,

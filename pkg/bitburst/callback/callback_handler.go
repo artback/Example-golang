@@ -25,7 +25,6 @@ func Handler(service id.Service) gin.HandlerFunc {
 			c.Status(http.StatusBadRequest)
 			c.Error(err)
 		}
-
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		go func() {
 			defer cancel()
