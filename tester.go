@@ -27,6 +27,7 @@ func main() {
 			fmt.Println(err)
 			continue
 		}
+		fmt.Printf("Posting %d ids \n", len(ids))
 		_ = resp.Body.Close()
 	}
 

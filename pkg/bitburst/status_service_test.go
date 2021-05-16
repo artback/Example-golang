@@ -1,9 +1,11 @@
 package bitburst
 
 import (
+	"bitburst/internal/pkg/elapsed"
 	"bitburst/pkg/online"
 	"context"
 	"errors"
+	"github.com/sirupsen/logrus"
 	"testing"
 	"time"
 )
@@ -70,8 +72,9 @@ func TestService_Handle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := Service{
-				tt.fields.Client,
-				tt.fields.Repository,
+				Client: tt.fields.Client,
+				Upsert: tt.fields.Repository,
+				Log:    elapsed.Log{logrus.New()},
 			}
 			if err := s.Handle(tt.args.ctx, tt.args.ids); (err != nil) != tt.wantErr {
 				t.Errorf("Handle() error = %v, wantErr %v", err, tt.wantErr)

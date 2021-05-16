@@ -16,6 +16,7 @@ func Handler(service id.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var resp response
 		err := c.ShouldBindJSON(&resp)
+		c.Header("Connection", "close")
 		if err != nil {
 			c.Status(http.StatusBadRequest)
 			c.Error(err)

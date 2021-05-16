@@ -1,7 +1,7 @@
 package bitburst
 
 import (
-	logging2 "bitburst/internal/pkg/logging"
+	"bitburst/internal/pkg/elapsed"
 	"bitburst/pkg/online"
 	"context"
 	"fmt"
@@ -10,12 +10,14 @@ import (
 
 type Service struct {
 	online.Client
-	Repository online.Upsert
+	online.Upsert
+	elapsed.Log
 }
 
 func (s Service) Handle(ctx context.Context, ids []int) error {
+
 	status, err := func() ([]online.Status, error) {
-		defer logging2.Elapsed(fmt.Sprintf("Client get %d ids", len(ids)))()
+		defer s.Elapsed(fmt.Sprintf("Client get %d ids", len(ids)))()
 		return s.GetStatus(ids)
 	}()
 	if err != nil {
@@ -28,8 +30,8 @@ func (s Service) Handle(ctx context.Context, ids []int) error {
 		}
 	}
 	err = func() error {
-		defer logging2.Elapsed(fmt.Sprintf("Repository.UpsertAll %d elements", len(status)))()
-		err := s.Repository.UpsertAll(ctx, onlineIds, time.Now())
+		defer s.Elapsed(fmt.Sprintf("Repository.UpsertAll %d elements", len(status)))()
+		err := s.UpsertAll(ctx, onlineIds, time.Now())
 		return err
 	}()
 	return err

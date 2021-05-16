@@ -1,4 +1,4 @@
-package repository
+package bitburst
 
 import (
 	"bitburst/pkg/online"
@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-func startDatabase(tb testing.TB) *url.URL {
+func startDatabase(tb testing.TB) string {
 	tb.Helper()
 
 	pgURL := &url.URL{
@@ -101,7 +101,7 @@ func startDatabase(tb testing.TB) *url.URL {
 		tb.Fatalf("Could not connect to postgres container: %v", err)
 	}
 
-	return pgURL
+	return pgURL.String()
 }
 
 func Test_postgresRepository_DeleteOlder(t *testing.T) {
@@ -199,7 +199,7 @@ func TestNewPostgresRepository(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 	type args struct {
-		url *url.URL
+		url string
 	}
 	tests := []struct {
 		name    string
@@ -217,7 +217,7 @@ func TestNewPostgresRepository(t *testing.T) {
 		{
 			name: "error url",
 			args: args{
-				&url.URL{},
+				"",
 			},
 			wantErr: true,
 		},

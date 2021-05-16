@@ -12,10 +12,14 @@ services:
     build:
       context: .
     restart: always
+    environment:
+      SERVICE_ADDRESS: http://onlineservice:9010/objects
+      SERVER_ADDRESS: :9090
+      DB_SOURCE: "port=5432 host=db user=user password=password dbname=bitburst sslmode=disable "
     depends_on:
       - db
     ports:
-    - 9090:9090
+      - 9090:9090
   onlineservice:
     build:
       context: ./service
