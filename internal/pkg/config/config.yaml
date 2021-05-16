@@ -4,7 +4,8 @@ service:
 database:
   dbname: "bitburst"
   driver: "postgres"
-  host: "db"
+  host: "postgres"
   password: "password"
   port: 5432
   user: "user"
+  ssl_mode: "disable"

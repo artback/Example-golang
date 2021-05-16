@@ -1,4 +1,4 @@
-package bitburst
+package repository
 
 import (
 	"bitburst/pkg/online"
@@ -104,7 +104,10 @@ func startDatabase(tb testing.TB) *url.URL {
 	return pgURL
 }
 
-func Test_postgresRepository_Delete(t *testing.T) {
+func Test_postgresRepository_DeleteOlder(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test")
+	}
 	tests := []struct {
 		name    string
 		time    time.Time
@@ -124,7 +127,7 @@ func Test_postgresRepository_Delete(t *testing.T) {
 			setup: func(repo online.Repository) {
 				repo.UpsertAll(
 					context.Background(),
-					[]online.Status{{1, true}, {5, true}},
+					[]int{1, 5},
 					time.Now(),
 				)
 			},
@@ -134,85 +137,54 @@ func Test_postgresRepository_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s, err := NewPostgresRepository(startDatabase(t))
-			if (err != nil) != tt.wantErr {
-				t.Errorf("DeleteAll() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			repository := s.(*postgresRepository)
 			tt.setup(s)
 			err = s.DeleteOlder(context.Background(), tt.time)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteAll() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			res, err := repository.Exec("select * from status")
-			if (err != nil) != tt.wantErr {
-				t.Errorf("DeleteAll() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			got, _ := res.RowsAffected()
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("DecodeStatus() got = %v, want %v", got, tt.want)
-			}
 		})
 	}
 }
 
 func Test_postgresRepository_UpsertAll(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test")
+	}
 	tests := []struct {
-		name       string
-		repository online.Repository
-		status     []online.Status
-		context    context.Context
-		wantErr    bool
-		want       int64
+		name    string
+		ids     []int
+		context context.Context
+		wantErr bool
+		want    int64
 	}{
 		{
-			name:   "insert 2",
-			status: []online.Status{{1, true}, {2, true}},
-			repository: func() online.Repository {
-				s, err := NewPostgresRepository(startDatabase(t))
-				if err != nil {
-					t.Fatal(err)
-				}
-				return s
-			}(),
+			name: "insert 2",
+			ids:  []int{1, 2},
 			want: 2,
 		},
 		{
-			name:   "insert empty",
-			status: []online.Status{},
-			repository: func() online.Repository {
-				s, err := NewPostgresRepository(startDatabase(t))
-				if err != nil {
-					t.Fatal(err)
-				}
-				return s
-			}(),
-		},
-		{
-			name:   "insert no table",
-			status: []online.Status{{1, true}, {2, true}},
-			repository: func() online.Repository {
-				db, err := sql.Open("pgx", startDatabase(t).String())
-				if err != nil {
-					t.Fatal(err)
-				}
-				return &postgresRepository{db}
-			}(),
-			wantErr: true,
+			name: "insert empty",
+			ids:  []int{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.repository.UpsertAll(context.Background(), tt.status, time.Now())
+			repo, err := NewPostgresRepository(startDatabase(t))
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = repo.UpsertAll(context.Background(), tt.ids, time.Now())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpsertAll() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			repository := tt.repository.(*postgresRepository)
 			if !tt.wantErr {
-				res, _ := repository.Exec("select * from status")
+				r := repo.(*postgresRepository)
+				res, err := r.ExecContext(context.Background(), "select * from status")
+				if err != nil {
+					t.Fatal(err)
+				}
 				got, _ := res.RowsAffected()
 				if !reflect.DeepEqual(got, tt.want) {
 					t.Errorf("UpsertAll() got = %v, want %v", got, tt.want)
@@ -223,6 +195,9 @@ func Test_postgresRepository_UpsertAll(t *testing.T) {
 }
 
 func TestNewPostgresRepository(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test")
+	}
 	type args struct {
 		url *url.URL
 	}

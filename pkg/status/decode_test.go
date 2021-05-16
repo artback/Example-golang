@@ -1,8 +1,8 @@
 package status_test
 
 import (
-	status2 "bitburst/pkg/bitburst/status"
 	"bitburst/pkg/online"
+	status2 "bitburst/pkg/status"
 	"io"
 	"reflect"
 	"strings"

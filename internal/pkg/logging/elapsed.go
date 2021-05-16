@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
@@ -8,6 +9,6 @@ import (
 func Elapsed(what string) func() {
 	start := time.Now()
 	return func() {
-		log.Info("%s took %v\n", what, time.Since(start))
+		log.Info(fmt.Sprintf("%s took %v\n", what, time.Since(start)))
 	}
 }

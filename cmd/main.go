@@ -1,10 +1,11 @@
 package main
 
 import (
-	"bitburst/internal/config"
+	"bitburst/internal/pkg/config"
 	"bitburst/pkg/bitburst"
-	"bitburst/pkg/bitburst/callback"
-	"bitburst/pkg/bitburst/status"
+	"bitburst/pkg/bitburst/repository"
+	"bitburst/pkg/callback"
+	"bitburst/pkg/status"
 	"context"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -16,7 +17,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	repo, err := bitburst.NewPostgresRepository(conf.GetdbUrl())
+	repo, err := repository.NewPostgresRepository(conf.GetdbUrl())
 	if err != nil {
 		log.Fatal(err)
 		return

@@ -21,7 +21,7 @@ type testRepository struct {
 	err error
 }
 
-func (t testRepository) UpsertAll(_ context.Context, _ []online.Status, _ time.Time) error {
+func (t testRepository) UpsertAll(_ context.Context, _ []int, _ time.Time) error {
 	return t.err
 }
 

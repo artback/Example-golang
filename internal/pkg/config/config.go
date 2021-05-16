@@ -23,6 +23,7 @@ type DatabaseConfiguration struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 	Database string `yaml:"dbname"`
+	SSLMode  string `yaml:"ssl_mode"`
 }
 
 func NewConfig() (*Configuration, error) {
@@ -43,14 +44,15 @@ func NewConfig() (*Configuration, error) {
 }
 
 func (c *Configuration) GetdbUrl() *url.URL {
+	d := c.Database
 	url := &url.URL{
 		Scheme: "postgres",
-		User:   url.UserPassword(c.Database.User, c.Database.Password),
-		Host:   c.Database.Host,
-		Path:   c.Database.Database,
+		User:   url.UserPassword(d.User, d.Password),
+		Host:   d.Host,
+		Path:   d.Database,
 	}
 	q := url.Query()
-	q.Add("sslmode", "disable")
+	q.Add("sslmode", d.SSLMode)
 	url.RawQuery = q.Encode()
 	return url
 }

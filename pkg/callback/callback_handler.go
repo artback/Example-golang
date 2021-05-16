@@ -12,11 +12,6 @@ type response struct {
 	ObjectIds []int `json:"object_ids"`
 }
 
-func SetupRouter(s id.Service) *gin.Engine {
-	e := gin.New()
-	e.POST("/callback", Handler(s))
-	return e
-}
 func Handler(service id.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var resp response

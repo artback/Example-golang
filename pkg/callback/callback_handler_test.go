@@ -1,6 +1,7 @@
-package callback
+package callback_test
 
 import (
+	"bitburst/pkg/callback"
 	"bitburst/pkg/id"
 	"bytes"
 	"context"
@@ -15,7 +16,7 @@ type service struct {
 	err error
 }
 
-func (s service) Handle(_ context.Context, ids []int) error {
+func (s service) Handle(_ context.Context, _ []int) error {
 	return s.err
 }
 func Test_callbackHandler_ServeHTTP(t *testing.T) {
@@ -67,7 +68,7 @@ func Test_callbackHandler_ServeHTTP(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := gin.Default()
-			g.POST("/", CallBackHandler(tt.service))
+			g.POST("/", callback.Handler(tt.service))
 			req, _ := http.NewRequest(tt.method, "/", bytes.NewReader(tt.body))
 			testHTTPResponse(g, req, func(w *httptest.ResponseRecorder) {
 				if status := w.Code; status != tt.want {
