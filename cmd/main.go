@@ -9,30 +9,13 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	easy "github.com/t-tomalak/logrus-easy-formatter"
 	ginlogrus "github.com/toorop/gin-logrus"
 	"net/http"
-	"os"
 	"time"
 )
 
 func main() {
-	logger := &logrus.Logger{
-		Out:   os.Stdout,
-		Level: logrus.InfoLevel,
-		Formatter: &easy.Formatter{
-			TimestampFormat: "2006-01-02 15:04:05",
-			LogFormat:       "[%lvl%]: %time% - %msg%",
-		},
-	}
-	ginLogger := &logrus.Logger{
-		Out:   os.Stdout,
-		Level: logrus.InfoLevel,
-		Formatter: &easy.Formatter{
-			TimestampFormat: "2006-01-02 15:04:05",
-			LogFormat:       "[%lvl%]: %time% - %method%(%statusCode%): %path% \n",
-		},
-	}
+	logger := logrus.New()
 	conf, err := config.LoadConfig()
 	if err != nil {
 		logger.Fatal(err)
@@ -64,7 +47,7 @@ func main() {
 
 	logger.Info("Start server ", conf.ServerAddress)
 	router := gin.New()
-	router.Use(ginlogrus.Logger(ginLogger))
+	router.Use(ginlogrus.Logger(logger))
 	router.POST("/callback", callback.Handler(s))
 	logger.Error(router.Run(conf.ServerAddress))
 }
